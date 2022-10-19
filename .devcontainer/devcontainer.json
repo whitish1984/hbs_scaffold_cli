@@ -1,0 +1,31 @@
+{
+    "name": "nodejs dev environment",
+	"initializeCommand": "echo \"DOCKER_GID='$(getent group docker | cut -d: -f3)'\" > .devcontainer/.env",
+    "build": {
+        "dockerfile": "dev.Dockerfile",
+        "args": {
+            "DOCKER_GID": "${localEnv: DOCKER_GID}"
+        }
+    },
+    "workspaceFolder": "/workspace",
+	"mounts": [
+		"source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind,consistency=cached"
+	],
+	"containerUser": "node",
+    "shutdownAction": "stopContainer",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "dbaeumer.vscode-eslint",
+                "Orta.vscode-jest"
+            ],
+            "settings": {
+                "javascript.suggestionActions.enabled": false,
+                "jest.jestCommandLine": "npx jest -c 'tests/jest.config.js'",
+                "eslint.format.enable": true,
+                "eslint.workingDirectories": [ "./" ]
+            }
+        }
+    }
+}

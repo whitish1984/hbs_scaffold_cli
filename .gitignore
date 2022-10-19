@@ -1,0 +1,4 @@
+/.devcontaner/.env
+/bin/
+/lib/
+node_modules/
