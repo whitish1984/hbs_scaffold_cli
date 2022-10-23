@@ -1,6 +1,6 @@
 {
   "name": "hbs-scaffold-cli",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "handlebars cli for scaffolding",
   "keywords": [
     "handlebars",
@@ -9,6 +9,7 @@
   ],
   "author": "whitish1984",
   "license": "MIT",
+  "homepage": "https://github.com/whitish1984/hbs_scaffold_cli",
   "engines": {
     "node": ">10.12.0"
   },

@@ -134,7 +134,7 @@ elements:
 {{/if}}
 {{#each elements as |el|}}
   {{#render './tmpl/tmpl2.hbs'~}}
-    ./{{dirname}}/{{el}}.txt
+    ./{{../dirname}}/{{el}}.txt
   {{~/render}}
 {{/each}}
 ```
