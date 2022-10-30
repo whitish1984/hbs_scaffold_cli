@@ -19,7 +19,8 @@ describe('run', () => {
     outputDir: './out',
     templateDir: 'path/',
     inputs: ['path/to/data.yaml'],
-    customHelpers: ['path/to/helper.js']
+    customHelpers: ['path/to/helper.js'],
+    preloads: []
   };
   const STORE = { writeFile: '', mkDir: '' };
 

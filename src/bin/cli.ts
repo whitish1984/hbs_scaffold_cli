@@ -38,6 +38,12 @@ Generate files from handlebars templates.
       Wildcard(*) can be used and "**" matched any files or directories 
       located at any depth (same convention of .gitignore).
 
+    --preload(-p) <path>
+      Template files to be preloaded for each generation.
+      Please refer to README in github project how to use preload.
+      Wildcard(*) can be used and "**" matched any files or directories 
+      located at any depth (same convention of .gitignore).
+
     --template-root <path>
       Root path of template files. 
       Each relative path from the root to a template file is used for a output file path.
@@ -55,7 +61,7 @@ Generate files from handlebars templates.
     Please refer to '--template-root' option for the detail of template root.
   * If a template file includes .handlebars or .hbs extension in its name,
     such extensions are removed from the output file.
-  * Template file name and its directories can be dynamically generated with 
+  * Template file name and its directories can be dynamically specified with 
     ".brueprint" definition. For more detail, Please refer to README in github project
   * Environment variables can always be used for input data with _env object
     (e.g. _env.(environment variable name)).
@@ -69,11 +75,12 @@ Generate files from handlebars templates.
 
 function getParsedArgs(process: NodeJS.Process): minimist.ParsedArgs {
   return minimist(process.argv.slice(2), {
-    string: [ 'input', 'custom-helper', 'template-root' ],
+    string: [ 'input', 'custom-helper', 'preload', 'template-root' ],
     boolean: [ 'help', 'verbose' ],
     alias: {
       'input': 'i',
       'custom-helper': 'c',
+      'preload': 'p',
       'verbose': 'v',
       'help': 'h'
     },
@@ -108,8 +115,9 @@ async function cli(p: NodeJS.Process) {
     templates: templates,
     templateDir: (minimistArgs['template-root'] as string)??getPrefixPath(templates),
     outputDir: minimistArgs._[minimistArgs._.length-1],
-    customHelpers: await resolveGlobs(getArray(minimistArgs, 'custom-helper'), { dot: true }), 
-    inputs: await resolveGlobs(getArray(minimistArgs, 'input'), { dot: true })
+    inputs: await resolveGlobs(getArray(minimistArgs, 'input'), { dot: true }),
+    preloads: await resolveGlobs(getArray(minimistArgs, 'preload'), { dot: true }),
+    customHelpers: await resolveGlobs(getArray(minimistArgs, 'custom-helper'), { dot: true })
   };
 
   // Run

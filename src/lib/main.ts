@@ -2,6 +2,7 @@ import type { Data } from '@/lib/util';
 
 import * as df from '@/lib/dataFetcher';
 import * as pr from '@/lib/processor';
+import { setPreloads } from '@/lib/preload';
 import { naturalCast } from '@/lib/util';
 
 /**
@@ -15,9 +16,11 @@ export interface Args {
   /** root directory for the output files */
   outputDir: string;
   /** paths of input data files. */
-  inputs: string[];
+  inputs?: string[];
+  /** paths of preload files. */
+  preloads?: string[];
   /** paths of custom helper files. */
-  customHelpers: string[];
+  customHelpers?: string[];
 }
 
 /**
@@ -45,13 +48,16 @@ export async function run(args: Args): Promise<Result> {
 
   // import custom helpers
   const registeredHelpers = await pr.processData(
-    await df.collectData(args.customHelpers, df.helpersDataFetcher), 
+    await df.collectData(args.customHelpers??[], df.helpersDataFetcher), 
     pr.registerHelperProcesser
   );
 
   // consolidate data.
-  const consolidatedData = await df.collectData(args.inputs, df.inputsDataFetcher);
+  const consolidatedData = await df.collectData(args.inputs??[], df.inputsDataFetcher);
   consolidatedData['_env'] = naturalCast(process.env);
+
+  // set preloads.
+  await setPreloads(args.preloads??[]);
 
   // generated files.
   const generatedFiles = await pr.processData(

@@ -6,10 +6,11 @@ import fs from 'fs/promises';
 import Handlebars from 'handlebars';
 import p from 'path';
 
+import { setPreloads } from '@/lib/preload';
 import { exception } from '@/lib/util';
 
 /**
- * Generate source object from blueprint file.
+ * Generate source object and preload files from the blueprint.
  * 
  * @param {string} tmplDir
  *    root directory path of the template file.
@@ -17,18 +18,22 @@ import { exception } from '@/lib/util';
  *    path to the blueprint file.
  * @param {Data} inputData
  *    Data object includes input data to generate.
- * @return {Promise<Data<Source>}
+ * @return {Promise<Data<Source>>}
  *    return Source object for generation.
  */
 export async function loadBlueprint(tmplDir: string, blueprint: string, inputData: Data): Promise<Data<Source>> {
   const sources: Data<Source> = {};
-  registerGeneratorHelper(sources, tmplDir, p.dirname(blueprint));
+  const preloadPaths: string[] = [];
+  registerRenderHelper(sources, tmplDir, p.dirname(blueprint));
+  registerPreloadHelper(preloadPaths, p.dirname(blueprint));
   Handlebars.compile(await fs.readFile(blueprint, 'utf8'))(inputData);
-  unregisterGeneratorHelper();
+  unregisterRenderHelper();
+  unregisterPreloadHelper();
+  await setPreloads(preloadPaths);
   return sources;
 }
 
-function registerGeneratorHelper(sources: Data<Source>, tmplDir: string, bpDir: string) {
+function registerRenderHelper(sources: Data<Source>, tmplDir: string, bpDir: string) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Handlebars.registerHelper('render', function(this: any, ...args: unknown[]) {
     const options = args.pop() as HelperOptions & {loc: { start: unknown } };
@@ -44,7 +49,6 @@ function registerGeneratorHelper(sources: Data<Source>, tmplDir: string, bpDir: 
       template = p.join(bpDir, args[1] as string);
       break;
     default: 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       throw exception('SyntaxError', `Helper 'render' wrongly used at ${JSON.stringify(options.loc.start)}.`);
     }
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -52,6 +56,28 @@ function registerGeneratorHelper(sources: Data<Source>, tmplDir: string, bpDir: 
   });
 }
 
-function unregisterGeneratorHelper(){
+function unregisterRenderHelper(){
   Handlebars.unregisterHelper('render');
+}
+
+function registerPreloadHelper(preloadPaths: string[], bpDir: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Handlebars.registerHelper('preload', function(this: any, ...args: unknown[]) {
+    const options = args.pop() as HelperOptions & {loc: { start: unknown } };
+    switch (true) {
+    case (options.fn !== undefined && args.length === 0):
+      preloadPaths.push(p.join(bpDir, options.fn(this, options)));
+      break;
+    case (options.fn === undefined && args.length === 1):
+      preloadPaths.push(p.join(bpDir, args[0] as string));
+      break;
+    default: 
+      throw exception('SyntaxError', `Helper 'preload' wrongly used at ${JSON.stringify(options.loc.start)}.`);
+    }
+  });
+
+}
+
+function unregisterPreloadHelper(){
+  Handlebars.unregisterHelper('preload');
 }

@@ -6,6 +6,7 @@ import Handlebars from 'handlebars';
 import p from 'path';
 
 import { getInputPaths } from '@/lib/dataFetcher';
+import { getPreload } from '@/lib/preload';
 import { mergeData } from '@/lib/util';
 
 /**
@@ -28,7 +29,7 @@ export async function processData(data: Data<any>, processer: (key: string, valu
 }
 
 /**
- * Register a custom Handlebars helper.
+ * The processor to register a custom Handlebars helper.
  * 
  * @param {string} fnName
  *    name of a helper function. 
@@ -41,11 +42,11 @@ export async function processData(data: Data<any>, processer: (key: string, valu
  */
 export function registerHelperProcesser(fnName: string, fn: FunctionType): Promise<string> {
   Handlebars.registerHelper(fnName, fn);
-  return Promise.resolve(fnName); //
+  return Promise.resolve(fnName);
 }
 
 /**
- * Factory of the processer to generate output file 
+ * Factory of the processer to generate an output file
  * from a handlebars template with input data.
  * 
  * @param {string} outDir
@@ -64,7 +65,8 @@ export function generateProcesserFactory(outDir: string, inputData: Data):
     if (getInputPaths().some(item => p.resolve(item) === p.resolve(out))) {
       return `WARN: generating file '${out}' is overwriting one of input files. file generation is skipped.`;
     }
-    const output = Handlebars.compile(await fs.readFile(source.template, 'utf8'))(mergeData(inputData, source.extraData));
+    const template = getPreload() + await fs.readFile(source.template, 'utf8');
+    const output = Handlebars.compile(template)(mergeData(inputData, source.extraData));
     if (output.trim().length === 0) {
       return `WARN: generating file '${out}' become empty. file generation is skipped.`;
     }

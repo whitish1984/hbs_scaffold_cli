@@ -5,16 +5,16 @@ import yaml from 'js-yaml';
 import _ from 'lodash';
 import p from 'path';
 
-import { loadBlueprint } from './blueprint';
+import { loadBlueprint } from '@/lib/blueprint';
 import { mergeData, exception } from '@/lib/util';
 
 
 /** Source object for generation. */
 export interface Source {
   /** paths of handlebars template files. */
-  template: string,
+  template: string;
   /** extra input Data object used for the generation. */
-  extraData: Data,
+  extraData: Data;
 }
 
 // INPUT_PATHS is initialized only once at the first time of import,
@@ -75,8 +75,7 @@ export async function collectData(paths: string[], dataFetcher: (path: string) =
  * @return {Promise<Data<FunctionType>}
  *    Data object includes helper functions. 
  * @throws 
- *  - Error if no avaliable function includes in the path 
- *    or the file doesn't exist.
+ *  - Error if the file doesn't exist.
  */
 export async function helpersDataFetcher(path: string): Promise<Data<FunctionType>> {
   const helperEntries = Object.entries(await import(p.resolve(path)) as Data )
