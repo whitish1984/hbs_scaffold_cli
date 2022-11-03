@@ -1,4 +1,4 @@
-/.devcontaner/.env
+/.devcontainer/.env
 /bin/
 /lib/
 node_modules/
