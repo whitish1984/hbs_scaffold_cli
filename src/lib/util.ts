@@ -9,23 +9,16 @@ import p from 'path';
 /* c8 ignore next */
 export const fg = (...args: Parameters<typeof fgOriginal>) => fgOriginal(...args);
 
-// Utility types
-/** Any object whose key is string. */
-export declare type Data<T = unknown> = Record<string, T>;
-/** Utilty type for any function. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export declare type FunctionType = (...args: any[]) => any;
-
 /**
  * Get object property as array.
  * @template T
- * @param {Data} args
+ * @param {Record<string, T>} args
  *    object whose key is string.
  * @param {string} key
  *    property name.
  * @return {T[]} value of the property.
  */
-export function getArray<T=unknown>(args: Data, key: string): T[] {
+export function getAsArray<T=unknown>(args: Record<string, T>, key: string): T[] {
   switch (typeof args[key]) {
   case ('symbol'):
   case ('function'):
@@ -37,50 +30,9 @@ export function getArray<T=unknown>(args: Data, key: string): T[] {
     }
     else return [];
   default:
-    return [ args[key] as T ];
+    return [ args[key] ];
   }
 }
-
-/**
- * Merge two Data objects.
- * 
- * @param {Data} from
- *    Data object to be merged.
- * @param {Data} to
- *    Data object to merge.
- * @return {Data}
- *    return marged Data object.
- */
-export function mergeData(from: Data, to: Data): Data {
-  // When arrays are merged, the latter array always wins.
-  return _.mergeWith(from, to, (_a, b) => _.isArray(b) ? b : undefined );
-}
-
-/**
- * Cast string values in Data object natually.
- * 
- * @param {Data} data
- *    object whose key is string.
- * @return {Data}
- *    return casted object.
- */
-export function naturalCast(data: Data): Data {
-  return Object.fromEntries(Object.entries(data).map(entry => {
-    if (typeof entry[1] === 'string')
-      try {
-        entry[1] = JSON.parse(entry[1]);
-      }
-      catch{
-        // Do nothing -> set the string as it is.
-      } 
-    else if (entry[1] !== null && typeof entry[1] === 'object' 
-        && entry[1].constructor.name === 'Object') {
-      entry[1] = naturalCast(entry[1] as Data);
-    }
-    return entry;
-  })) as Data;
-}
-
 
 /**
  * Get paths resolved by given glob-patterns.

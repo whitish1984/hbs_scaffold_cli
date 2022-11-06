@@ -6,7 +6,7 @@ import Handlebars from 'handlebars';
 import { tn, mapperFactory } from '#/testUtil'; 
 
 // test targets
-import * as pr from '@/lib/processor';
+import * as pr from '@/lib/generate';
 // mock targets
 import fs from 'fs/promises';
 import * as df from '@/lib/dataFetcher';

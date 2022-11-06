@@ -1,2 +1,2 @@
 export * from '@/lib/main';
-export { getPrefixPath, getArray, resolveGlobs } from '@/lib/util';
+export { getPrefixPath, getAsArray, resolveGlobs } from '@/lib/util';

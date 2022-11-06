@@ -1,13 +1,15 @@
 import type { HelperOptions } from 'handlebars';
-import type { Data, FunctionType } from '@/lib/util';
-import type { Source } from '@/lib/dataFetcher';
+import type { Data } from '@/lib/dataOperator';
+import type { Helper } from '@/lib/customHelper';
+import type { Source } from '@/lib/source';
 
 import fs from 'fs/promises';
 import Handlebars from 'handlebars';
 import p from 'path';
 
 import { exception } from '@/lib/util';
-import { processData, registerHelperProcesserFactory } from '@/lib/processor';
+import { processRegisterHelpersFactory } from '@/lib/customHelper';
+import { collectPreloads } from '@/lib/preload';
 
 /**
  * Generate source object and preload files from the blueprint.
@@ -23,23 +25,26 @@ import { processData, registerHelperProcesserFactory } from '@/lib/processor';
  */
 export async function loadBlueprints(
   sources: Data<Source>, 
-  preloads: string[], 
+  preloads: Data<string>, 
   tmplDir: string, 
   blueprints: string[], 
-  helpersData: Data<FunctionType>,
+  helpersData: Data<Helper>,
   inputData: Data
 ):Promise<void> {
   await Promise.all(blueprints.map(async blueprint => {
+    const preloadPaths: string[] = [];
     const bpDir = p.dirname(blueprint);
     if (!p.resolve(bpDir).startsWith(p.resolve(tmplDir))){
       throw exception('RuntimeError',`Blueprint path '${blueprint}' is not located inside the '${tmplDir}'.`);
     }
     const BpHandlebars = Handlebars.create();
     const outputPrefix = p.relative(tmplDir, bpDir);
-    await processData(helpersData, registerHelperProcesserFactory(BpHandlebars));
+    await processRegisterHelpersFactory(BpHandlebars)(helpersData);
     registerRenderHelper(BpHandlebars, sources, bpDir, outputPrefix);
-    registerPreloadHelper(BpHandlebars, preloads, bpDir);
+    registerPreloadHelper(BpHandlebars, preloadPaths, bpDir);
     BpHandlebars.compile(await fs.readFile(blueprint, 'utf8'))(inputData);
+    Object.entries(await collectPreloads(preloadPaths))
+      .forEach(entry => preloads[entry[0]] = entry[1]);
   }));
 }
 

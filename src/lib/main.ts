@@ -1,11 +1,12 @@
-import type { Data, FunctionType } from '@/lib/util';
-import type { Source } from '@/lib/dataFetcher';
+import type { Data } from '@/lib/dataOperator';
+import type { Source } from '@/lib/source';
 
-import * as df from '@/lib/dataFetcher';
-import * as pr from '@/lib/processor';
-import * as pl from '@/lib/preload';
+import * as hlp from '@/lib/customHelper';
+import * as ind from '@/lib/inputData';
+import * as prl from '@/lib/preload';
+import * as src from '@/lib/source';
+import { getValues } from '@/lib/dataOperator';
 import { loadBlueprints } from '@/lib/blueprint';
-import { naturalCast } from '@/lib/util';
 
 /**
  * argument object for run function.
@@ -50,32 +51,32 @@ export interface Result {
  */
 export async function run(args: Args): Promise<Result> {
 
-  const inputPaths: string[] = [];
+  const usedPaths: string[] = [];
 
   // import custom helpers
-  const helpersData: Data<FunctionType> = await df.collectData(args.customHelpers??[], df.helpersDataFetcher);
-  const registeredHelpers = await pr.processData(helpersData, pr.registerHelperProcesser);
-  inputPaths.push(...args.customHelpers??[]);
+  const helpersData = await hlp.collectHelpers(args.customHelpers??[]);
+  const registeredHelpers = await hlp.processRegisterHelpers(helpersData);
+  usedPaths.push(...args.customHelpers??[]);
 
   // consolidate data.
-  const consolidatedData: Data = await df.collectData(args.inputs??[], df.inputsDataFetcher);
-  consolidatedData['_env'] = naturalCast(process.env);
-  inputPaths.push(...args.inputs??[]);
+  const consolidatedData = await ind.collectInputData(args.inputs??[]);
+  consolidatedData['_env'] = ind.naturalCast(process.env);
+  usedPaths.push(...args.inputs??[]);
 
   // collect preloads and sources.
-  const preloads: string[] = args.preloads??[];
-  const sources: Data<Source> = await df.collectData(args.templates??[], 
-    df.generateDataFetcherFactory(args.templateDir));
+  const preloads = await prl.collectPreloads(args.preloads??[]);
+  const sources = await src.collectSourcesFactory(args.templateDir)(args.templates??[]);
   // append preloads and sources from blueprints.
-  await loadBlueprints(sources, preloads, args.templateDir, args.blueprints??[], helpersData, consolidatedData);
-  const preloaded = pl.joinPreloaded(await df.collectData(preloads, pl.preloadDataFetcher));
-  inputPaths.push(...args.blueprints??[]);
-  inputPaths.push(...preloads);
-  inputPaths.push(...Object.entries<Source>(sources).map(args => args[1].template));
+  await loadBlueprints(
+    sources, preloads, args.templateDir, args.blueprints??[], helpersData, consolidatedData);
+  usedPaths.push(...args.blueprints??[]);
+  usedPaths.push(...getValues<string>(preloads));
+  usedPaths.push(...getValues<Source>(sources).map(val => val.template));
   
   // generated files.
-  const generatedFiles = await pr.processData(sources,
-    pr.generateProcesserFactory(args.outputDir, consolidatedData, preloaded, inputPaths));
+  const generatedFiles = await src.processSourceFactory(
+    args.outputDir, consolidatedData, prl.joinPreloaded(preloads), usedPaths
+  )(sources);
 
   return {
     registerdHelpers: registeredHelpers,

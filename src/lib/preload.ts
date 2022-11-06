@@ -1,26 +1,41 @@
-import type { Data } from '@/lib/util';
+import type { Data } from '@/lib/dataOperator';
 import fs from 'fs/promises';
 
+import { collectData } from '@/lib/dataOperator';
+
 /**
- * Get prelaods data.
+ * A data fetcher to preload template.
  * 
- * @return { string } 
- *    collected unique paths.
+ * @param {string} path
+ *    a file path of a handlebars template to be preloaded.
+ * @return {Promise<Data<string>>}
+ *    returns data object for preloaded template strings.
  */
-export async function preloadDataFetcher(preload: string): Promise<Data<string>> {
-  return { [preload]: await fs.readFile(preload, 'utf8')};
+export async function preloadDataFetcher(path: string): Promise<Data<string>> {
+  return { [path]: await fs.readFile(path, 'utf8')};
 }
 
 /**
- * set preload template contents.
+ * Collect preloads from paths.
  * 
- * Please refer to the project README.md
- * describes how to use preload. 
- * 
- * @param {string[]} paths 
- *    handelbars file path to be preloaded.
+ * @param {string[]} paths
+ *    file paths of a handlebars templates to be preloaded.
+ * @return {Promise<Data<string>>}
+ *    returns data object for preloaded template strings.
  */
-export function joinPreloaded(paths: Data<string>) {
-  return Object.entries(paths).map(entry => entry[1]).join('');
+export async function collectPreloads(paths: string[]): Promise<Data<string>> {
+  return await collectData<string>(paths, preloadDataFetcher);
+}
+
+/**
+ * Get a string of all preloads collected and combined
+ * 
+ * @param {Data<string>} preloads
+ *    Data object for preloads.
+ * @return {string}
+ *    returns a string of all preloads collected and combined.
+ */
+export function joinPreloaded(preloads: Data<string>): string {
+  return Object.entries(preloads).map(entry => entry[1]).join('');
 }
 
