@@ -70,7 +70,7 @@ Generate files from handlebars templates.
     as input with -i/--input option.
 
   GitHub Project:
-    https://github.com/whitish1984/handlebars-cli`
+    https://github.com/whitish1984/hbs_scaffold_cli`
   );
 }
 
