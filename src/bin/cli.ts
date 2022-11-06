@@ -2,6 +2,7 @@
 import type { Args, Result } from '@/lib/main'; 
 
 import minimist from 'minimist';
+import p from 'path';
 
 import { run } from '@/lib/main';
 import { getArray, resolveGlobs, getPrefixPath, exception } from '@/lib/util';
@@ -93,28 +94,30 @@ function getParsedArgs(process: NodeJS.Process): minimist.ParsedArgs {
   });
 }
 
-async function cli(p: NodeJS.Process) {
+async function cli(proc: NodeJS.Process) {
   // Provide a title to the process in `ps`
-  p.title = 'hbs';
+  proc.title = 'hbs';
 
   // Process arguments
-  const minimistArgs = getParsedArgs(p);
+  const minimistArgs = getParsedArgs(proc);
   
   // Print usage
   if (minimistArgs.help) {
     showUsage();
-    p.exit(0);
+    proc.exit(0);
   }
   
   // Validate / data collection
   if (minimistArgs._.length<2) {
     throw exception('CLIError', `a template_path and output_dir is mandatiory.${errorPostScript}`);
   }
-  const templates = await resolveGlobs(minimistArgs._.slice(0, minimistArgs._.length-1), { dot: true });
+  const templates: string[] = await resolveGlobs(minimistArgs._.slice(0, minimistArgs._.length-1));
+
   const args = {
-    templates: templates,
     templateDir: (minimistArgs['template-root'] as string)??getPrefixPath(templates),
     outputDir: minimistArgs._[minimistArgs._.length-1],
+    templates: templates.filter(path => p.basename(path) !== '.blueprint'),
+    blueprints: templates.filter(path => p.basename(path) === '.blueprint'),
     inputs: await resolveGlobs(getArray(minimistArgs, 'input'), { dot: true }),
     preloads: await resolveGlobs(getArray(minimistArgs, 'preload'), { dot: true }),
     customHelpers: await resolveGlobs(getArray(minimistArgs, 'custom-helper'), { dot: true })
@@ -138,7 +141,7 @@ async function cli(p: NodeJS.Process) {
     const numProcessed = result.generatedFiles.length - numSkipped;
     console.log(`${numProcessed} files are generated (${numSkipped} files are skipped).`);
   }
-  p.exit();
+  proc.exit();
 }
 
 cli(process).catch((e: unknown) => {

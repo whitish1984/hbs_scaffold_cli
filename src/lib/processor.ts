@@ -5,8 +5,6 @@ import fs from 'fs/promises';
 import Handlebars from 'handlebars';
 import p from 'path';
 
-import { getInputPaths } from '@/lib/dataFetcher';
-import { getPreload } from '@/lib/preload';
 import { mergeData } from '@/lib/util';
 
 /**
@@ -40,10 +38,14 @@ export async function processData(data: Data<any>, processer: (key: string, valu
  * @return {Promise<string>}
  *    registerd helper name as the resulting message.
  */
-export function registerHelperProcesser(fnName: string, fn: FunctionType): Promise<string> {
-  Handlebars.registerHelper(fnName, fn);
-  return Promise.resolve(fnName);
+export function registerHelperProcesserFactory(hbs: typeof Handlebars): (fnName: string, fn: FunctionType) => Promise<string> {
+  return (fnName: string, fn: FunctionType) => {
+    hbs.registerHelper(fnName, fn);
+    return Promise.resolve(fnName);
+  };
 }
+
+export const registerHelperProcesser = registerHelperProcesserFactory(Handlebars);
 
 /**
  * Factory of the processer to generate an output file
@@ -58,14 +60,14 @@ export function registerHelperProcesser(fnName: string, fn: FunctionType): Promi
  *    from a handlebars template with inputData.
  *    it returns outPath as the success message.
  */
-export function generateProcesserFactory(outDir: string, inputData: Data): 
+export function generateProcesserFactory(outDir: string, inputData: Data, preloaded: string, inputPaths: string[]): 
     (outPath: string, source: Source) => Promise<string> {
   return async (outPath: string, source: Source) => {
     const out = p.join(outDir, outPath);
-    if (getInputPaths().some(item => p.resolve(item) === p.resolve(out))) {
+    if (inputPaths.some(item => p.resolve(item) === p.resolve(out))) {
       return `WARN: generating file '${out}' is overwriting one of input files. file generation is skipped.`;
     }
-    const template = getPreload() + await fs.readFile(source.template, 'utf8');
+    const template = preloaded + await fs.readFile(source.template, 'utf8');
     const output = Handlebars.compile(template)(mergeData(inputData, source.extraData));
     if (output.trim().length === 0) {
       return `WARN: generating file '${out}' become empty. file generation is skipped.`;

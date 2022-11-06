@@ -1,17 +1,5 @@
+import type { Data } from '@/lib/util';
 import fs from 'fs/promises';
-
-// PRELOADS is initialized only once at the first time of import,
-// even if the module imported multiple times.
-// Instead, initPreloads could manually be triggerred if required.
-let PRELOADS: string[];
-initPreloads();
-
-/**
- * Reset the preloads (Set empty). 
- */
-export function initPreloads() {
-  PRELOADS = [];
-}
 
 /**
  * Get prelaods data.
@@ -19,8 +7,8 @@ export function initPreloads() {
  * @return { string } 
  *    collected unique paths.
  */
-export function getPreload(): string {
-  return PRELOADS.join('');
+export async function preloadDataFetcher(preload: string): Promise<Data<string>> {
+  return { [preload]: await fs.readFile(preload, 'utf8')};
 }
 
 /**
@@ -32,9 +20,7 @@ export function getPreload(): string {
  * @param {string[]} paths 
  *    handelbars file path to be preloaded.
  */
-export async function setPreloads(paths: string[]) {
-  return Promise.all(paths.map(async path => 
-    PRELOADS.push(await fs.readFile(path, 'utf8'))
-  ));
+export function joinPreloaded(paths: Data<string>) {
+  return Object.entries(paths).map(entry => entry[1]).join('');
 }
 
