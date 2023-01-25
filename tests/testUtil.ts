@@ -1,5 +1,5 @@
 import requireFromStringOriginal from 'require-from-string';
-import type {Data} from 'lib/util';
+import type {Data} from '@/lib/dataOperator';
 import type {FunctionLike} from 'jest-mock';
 
 export function tn(result:string, condition:string, columnLength = 30) {
@@ -18,7 +18,7 @@ type ReturnTypeOf<T> = T extends FunctionLike ? ReturnType<T> : NotAny<T>;
 export function mapperFactory<T>(map: Data): (key: string) => Promise<Resolve<ReturnTypeOf<T>>> {
   return async (key: string) => {
     if (typeof map[key] === 'undefined') {
-      throw new Error();
+      throw new Error(`"${key}" is not found.`);
     }
     return await Promise.resolve(map[key] as Resolve<ReturnTypeOf<T>>);
   };

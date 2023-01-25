@@ -1,6 +1,6 @@
 {
   "name": "hbs-scaffold-cli",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "handlebars cli for scaffolding",
   "keywords": [
     "handlebars",

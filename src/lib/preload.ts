@@ -1,4 +1,5 @@
 import type { Data } from '@/lib/dataOperator';
+
 import fs from 'fs/promises';
 
 import { collectData } from '@/lib/dataOperator';

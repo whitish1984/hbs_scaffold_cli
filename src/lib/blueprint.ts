@@ -11,28 +11,37 @@ import { exception } from '@/lib/util';
 import { processRegisterHelpersFactory } from '@/lib/customHelper';
 import { collectPreloads } from '@/lib/preload';
 
+/** return object for blueprint. */
+export interface Blueprint {
+  /** Source objects after loading of the blueprints. */
+  sources: Data<Source>;
+  /** preload paths after loading of the blueprints. */
+  preloads: Data<string>;
+}
+
 /**
  * Generate source object and preload files from the blueprint.
  * 
  * @param {string} tmplDir
  *    root directory path of the template file.
- * @param {string} blueprint
- *    path to the blueprint file.
+ * @param {string[]} blueprints
+ *    relative paths to the blueprint files from the tmplDir.
+ * @param {Data<Helper>} helpersData
+ *    cusotm helper Data.
  * @param {Data} inputData
  *    Data object includes input data to generate.
- * @return {Promise<void>}
+ * @return {Promise<Blueprint>}
  *    return Source object for generation.
  */
 export async function loadBlueprints(
-  sources: Data<Source>, 
-  preloads: Data<string>, 
   tmplDir: string, 
   blueprints: string[], 
   helpersData: Data<Helper>,
   inputData: Data
-):Promise<void> {
+): Promise<Blueprint> {
+  const sources: Data<Source> = {};
+  const preloadPaths: string[] = [];
   await Promise.all(blueprints.map(async blueprint => {
-    const preloadPaths: string[] = [];
     const bpDir = p.dirname(blueprint);
     if (!p.resolve(bpDir).startsWith(p.resolve(tmplDir))){
       throw exception('RuntimeError',`Blueprint path '${blueprint}' is not located inside the '${tmplDir}'.`);
@@ -43,9 +52,12 @@ export async function loadBlueprints(
     registerRenderHelper(BpHandlebars, sources, bpDir, outputPrefix);
     registerPreloadHelper(BpHandlebars, preloadPaths, bpDir);
     BpHandlebars.compile(await fs.readFile(blueprint, 'utf8'))(inputData);
-    Object.entries(await collectPreloads(preloadPaths))
-      .forEach(entry => preloads[entry[0]] = entry[1]);
   }));
+  return {
+    sources: sources,
+    preloads: await collectPreloads(preloadPaths)
+  } as Blueprint;
+
 }
 
 function registerRenderHelper(

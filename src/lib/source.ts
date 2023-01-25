@@ -1,4 +1,5 @@
-import type { Data, DataFetcher, Processor } from '@/lib/dataOperator';
+import type { Data } from '@/lib/dataOperator';
+import type { DataFetcher, Processor } from '@/lib/dataOperator';
 
 import fs from 'fs/promises';
 import Handlebars from 'handlebars';
@@ -16,7 +17,7 @@ export interface Source {
 }
 
 /**
- * A factory of a data fetcher to calculate output file path. 
+ * A factory of a data fetcher to set output file path. 
  * 
  * @param {string} tmplDir
  *    root directory path of the template file.

@@ -20,13 +20,14 @@ module.exports = {
   collectCoverage: true,
 
   // An array of glob patterns indicating a set of files for which coverage information should be collected
-  collectCoverageFrom: [ "<rootDir>/src/lib/*.ts" ],
+  collectCoverageFrom: [ "<rootDir>/src/**/*.ts" ],
 
   // The directory where Jest should output its coverage files
   // coverageDirectory: undefined,
 
   // An array of regexp pattern strings used to skip coverage collection
   coveragePathIgnorePatterns: [
+    "<rootDir>/src/bin/cli.ts",
     "<rootDir>/src/lib/api.ts"
   ],
 
@@ -104,7 +105,7 @@ module.exports = {
   resetMocks: true,
 
   // Reset the module registry before running each individual test
-  // resetModules: false,
+  resetModules: true,
 
   // A path to a custom resolver
   // resolver: undefined,

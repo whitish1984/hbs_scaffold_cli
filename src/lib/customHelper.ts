@@ -1,10 +1,9 @@
-import { Data, processData, Processor } from '@/lib/dataOperator';
+import type { Data } from '@/lib/dataOperator';
 
 import Handlebars from 'handlebars';
 import p from 'path';
 
-import { collectData } from '@/lib/dataOperator';
-
+import { collectData, processData, Processor } from '@/lib/dataOperator';
 
 /** Utilty type for any function to use custom helper. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -15,7 +14,7 @@ export declare type Helper = (...args: any[]) => any;
  * 
  * @param {string} path 
  *    file path of the js file.
- * @return {Promise<Data<Helper>}
+ * @return {Promise<Data<Helper>>}
  *    Data object includes helper functions. 
  * @throws 
  *  - Error if the file doesn't exist.
@@ -34,8 +33,8 @@ export async function helpersDataFetcher(path: string): Promise<Data<Helper>> {
  * @return {Promise<Data<HelperType>>}
  *    Data object includes helper functions. 
  */
-export async function collectHelpers(paths: string[]): Promise<Data<Helper>> {
-  return await collectData<Helper>(paths, helpersDataFetcher);
+export function collectHelpers(paths: string[]): Promise<Data<Helper>> {
+  return collectData<Helper>(paths, helpersDataFetcher);
 }
 
 /**

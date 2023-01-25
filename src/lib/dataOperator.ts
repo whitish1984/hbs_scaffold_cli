@@ -27,7 +27,7 @@ export async function collectData<T=any>(paths: string[], dataFetcher: DataFetch
   const items = await Promise.all(paths.map(async (path: string) => await dataFetcher(path)));
   let base: Data<T> = {};
   items.forEach((item: Data<T>) => 
-    base = mergeData(base, item) as Data<T>
+    base = mergeData<T>(base, item)
   );
   return base;
 }
@@ -38,7 +38,7 @@ export async function collectData<T=any>(paths: string[], dataFetcher: DataFetch
  * @template T
  * @param {Data<T>} data 
  *    Data object to be processed.
- * @param {Processor} processer
+ * @param {Processor<T>} processer
  *    callback function to process each Data entries.
  *    its arguments are key-value pair of each entry.
  *    it returns a text as the resulting message.
@@ -52,21 +52,33 @@ export async function processData<T=any>(data: Data<T>, processer: Processor<T>)
   ));
 }
 
-export function getValues<T>(data: Data<T>):T[] {
+/**
+ * Get Data values as arrays.
+ * 
+ * @template T
+ * @param {Data<T>} data 
+ *    Data object to be processed.
+ * @return {T[]}
+ *    list of the resulting messages.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getDataValues<T>(data: Data<T>):T[] {
   return Object.entries<T>(data).map(args => args[1]);
 } 
 
 /**
  * Merge two Data objects.
  * 
- * @param {Data} from
+ * @template T
+ * @param {Data<T>} from
  *    Data object to be merged.
- * @param {Data} to
+ * @param {Data<T>} to
  *    Data object to merge.
- * @return {Data}
+ * @return {Data<T>}
  *    return marged Data object.
  */
-export function mergeData(from: Data, to: Data): Data {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function mergeData<T>(from: Data<T>, to: Data<T>): Data<T> {
   // When arrays are merged, the latter array always wins.
   return _.mergeWith(from, to, (_a, b) => _.isArray(b) ? b : undefined );
 }

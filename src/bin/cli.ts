@@ -5,7 +5,8 @@ import minimist from 'minimist';
 import p from 'path';
 
 import { run } from '@/lib/main';
-import { getAsArray, resolveGlobs, getPrefixPath, exception } from '@/lib/util';
+import { getStringArray, resolveGlobs, getPrefixPath } from '@/bin/cliUtil';
+import { exception } from '@/lib/util';
 
 const errorPostScript = '\n\nPlease check hbs -h for more detail.';
 
@@ -118,9 +119,9 @@ async function cli(proc: NodeJS.Process) {
     outputDir: minimistArgs._[minimistArgs._.length-1],
     templates: templates.filter(path => p.basename(path) !== '.blueprint'),
     blueprints: templates.filter(path => p.basename(path) === '.blueprint'),
-    inputs: await resolveGlobs(getAsArray<string>(minimistArgs, 'input'), { dot: true }),
-    preloads: await resolveGlobs(getAsArray<string>(minimistArgs, 'preload'), { dot: true }),
-    customHelpers: await resolveGlobs(getAsArray<string>(minimistArgs, 'custom-helper'), { dot: true })
+    inputs: await resolveGlobs(getStringArray(minimistArgs['input']), { dot: true }),
+    preloads: await resolveGlobs(getStringArray(minimistArgs['preload']), { dot: true }),
+    customHelpers: await resolveGlobs(getStringArray(minimistArgs['custom-helper']), { dot: true })
   };
 
   // Run
