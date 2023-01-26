@@ -1,18 +1,15 @@
 # Handlebars CLI for scaffolding
 
-This is a command line tool to render [handlebars](https://handlebarsjs.com/) templates applying static YAML/JSON data.
+This is a command line tool to render [handlebars](https://handlebarsjs.com/) templates applying static YAML/JSON data, 
+designed mainly for scaffolding: the tool can render multiple templates and make their directory structure at one time.
 
-Mainly designed for scaffolding: the tool can render multiple templates and make their directory structure at one time.
-
-It is worked on nodejs.
+It's worked on nodejs.
 
 ## How to install
 
 There are 2 options to install this tool.
 
 ### Use nodejs
-
-You can install/use as usual as normal npm package: 
 
 ```sh
 # global install
@@ -30,7 +27,6 @@ $ npx hbs-scaffold-cli -h
 see: https://www.npmjs.com/package/hbs-scaffold-cli
 
 ### Use docker image
-You can also use docker:
 
 ```sh
 $ docker run --rm whitish1984/hbs-scaffold-cli -h
@@ -78,7 +74,7 @@ Generate files from handlebars templates.
     --template-root <path>
       Root path of template files. 
       Each relative path from the root to a template file is used for a output file path.
-      By default, the longest common path of all template files is applied.
+      By default, the longest common path for all templates is applied.
 
     --verbose(-v)
       Print detailed result at standard output.
@@ -92,7 +88,7 @@ Generate files from handlebars templates.
     Please refer to '--template-root' option for the detail of template root.
   * If a template file includes .handlebars or .hbs extension in its name,
     such extensions are removed from the output file.
-  * Template file name and its directories can be dynamically specified with 
+  * Template file names and their directory structure can be dynamically controlled with 
     ".brueprint" definition. For more detail, Please refer to README in github project
   * Environment variables can always be used for input data with _env object
     (e.g. _env.(environment variable name)).
@@ -102,10 +98,15 @@ Generate files from handlebars templates.
 
 ## How to use `.blueprint`
 
-`.blueprint` approach is useful if you face a complex case: according to input data, if you want to conditionally branch/loop the rendering files, dynamically rename directories or files etc.
+`.blueprint` approach is useful if you face a complex case: 
+if you need to conditionally branch/loop the generating files, dynamically rename directories/files etc.
 
-You can design how to render output files with handlebars syntax in the `.blueprint` file. 
-For each rendering, you can set output path, additional input data, and used template using `render` helper. You can also use the `render` helper with `if`/`each` helpers for conditional/loop usage. 
+You can design how to generate output files with handlebars syntax in the `.blueprint` file. 
+Following custom helpers can be used only in the `.blueprint` file.
+ * `render` helper: Generate output file with output path, template file to be applied and additional input data(optional).
+ * `preload` helper: Set preload file with the file path.
+
+You can use the above helpers in conbination with any other usual helpers (e.g. `if`/`each` helpers). 
 
 ### Example
 
@@ -165,7 +166,8 @@ output file will be:
 
 ## How to use custom helper
 
-You can create custom handlebars helpers as js modules and load these modules at runtime. Exported functions are only be taken into account (e.g. exported class is ignored), and the function name is used for the helper name.
+You can create custom handlebars helpers as js modules and load these modules at runtime. 
+Exported functions are only be taken into account (e.g. exported class is ignored), and the function name is straightforwardly used for the helper name.
 
 ### Example
 
@@ -188,7 +190,7 @@ You can use above helper in a template and a `.blueprint`.
 ```
 ## How to use preload
 
-You can prepend a common template string for any rendering with prepend option.
+You can prepend a common template string for any generating with prepend option.
 Typical usage is assumed for inline partials.
 
 ### Example

@@ -12,7 +12,7 @@ const errorPostScript = '\n\nPlease check hbs -h for more detail.';
 
 function showUsage() {
   console.log(`
-Generate files from handlebars templates.
+  Generate files from handlebars templates.
 
   Usage: 
     hbs -h
@@ -49,7 +49,7 @@ Generate files from handlebars templates.
     --template-root <path>
       Root path of template files. 
       Each relative path from the root to a template file is used for a output file path.
-      By default, the longest common path of all template files is applied.
+      By default, the longest common path for all templates is applied.
 
     --verbose(-v)
       Print detailed result at standard output.
@@ -63,7 +63,7 @@ Generate files from handlebars templates.
     Please refer to '--template-root' option for the detail of template root.
   * If a template file includes .handlebars or .hbs extension in its name,
     such extensions are removed from the output file.
-  * Template file name and its directories can be dynamically specified with 
+  * Template file names and their directory structure can be dynamically controlled with 
     ".brueprint" definition. For more detail, Please refer to README in github project
   * Environment variables can always be used for input data with _env object
     (e.g. _env.(environment variable name)).

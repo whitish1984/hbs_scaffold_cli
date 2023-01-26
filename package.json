@@ -1,6 +1,6 @@
 {
   "name": "hbs-scaffold-cli",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "handlebars cli for scaffolding",
   "keywords": [
     "handlebars",
@@ -14,7 +14,8 @@
     "node": ">10.12.0"
   },
   "files": [
-    "lib"
+    "lib",
+    "bin"
   ],
   "main": "lib/api.js",
   "module": "lib/api.js",
